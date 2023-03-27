@@ -217,7 +217,50 @@ En la siguiente lista se incluyen 10 posibles problemas que pueden encontrarse e
 
 a) ¿Existe algún tipo de problema en la implementación anterior de los que se incluye en la lista anterior? ¿Es necesario aplicar refactoring en este caso? En el caso de que existan problemas, indique cuáles son y qué tipos de problemas piensa que generarían en el futuro si no se aplica el refactoring ahora.
 
+En la implementación anterior, se pueden identificar varios problemas de los mencionados en la lista:
+
+Código duplicado: existe código duplicado al crear dos listas iguales en la misma función.En lugar de esto, podríamos modificar la lista original en lugar de crear una nueva.
+
+Funciones con nombre que no especifican de forma clara su objetivo: El nombre de la función `getUsers` no es muy claro, ya que no se especifica que se están obteniendo los usuarios ordenados por puntos y con sus nombres en mayúsculas.
+
+Funciones con demasiada responsabilidad: La función `getUsers` realiza dos operaciones distintas, la ordenación de los usuarios por puntos y la capitalización de sus nombres. Sería mejor dividirla en dos funciones separadas para cada una de estas operaciones. 
+
+
+
+Si no se aplicara refactoring en este caso, los problemas identificados podrían aumentar la complejidad y el mantenimiento del código en el futuro.
+
 b) En el caso de que la implementación necesite la aplicación de refactoring, realice los cambios oportunos e indique las mejoras que aporta su implementación respecto a la original.
+
+`GroupOfUsers.java`
+```java
+public class GroupOfUsers {
+ 
+    private final Map<String, Integer> usersWithPoints;
+
+    public GroupOfUsers() {
+        this.usersWithPoints = new HashMap<>();
+        this.usersWithPoints.put("User1", 800);
+        this.usersWithPoints.put("User2", 550);
+        this.usersWithPoints.put("User3", 20);
+        this.usersWithPoints.put("User4", 300);
+    }
+    
+    public List<String> getCapitalizedUsersSortedByPoints() {
+        return this.usersWithPoints.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .map(entry -> entry.getKey().toUpperCase())
+                .collect(Collectors.toList());
+    }
+
+}
+```
+- Se ha eliminado la lista intermedia users y se ha utilizado el método map() en la cadena de operaciones de flujo de Java para capitalizar los nombres de usuario directamente.
+- Se ha renombrado el método getUsers a getCapitalizedUsersSortedByPoints para describir con mayor precisión la funcionalidad de la función.
+- Se ha eliminado la variable estática usersWithPoints y se ha cambiado por una variable de instancia usersWithPoints. Esto permite una mejor escalabilidad y facilidad para realizar pruebas unitarias, ya que cada instancia de la clase GroupOfUsers tendría su propio conjunto de usuarios y puntos.
+- Se ha eliminado el doble llaveado para la creación del mapa usersWithPoints, ya que esto no es necesario y puede ser más difícil de entender.
+- Se ha utilizado el método Collectors.toList() para recolectar los elementos de la cadena de flujo de Java en una lista. Esto es más claro y conciso que utilizar forEach() para agregar elementos a una lista.
+
 
 ### Ejercicio 2
 
@@ -310,7 +353,64 @@ Responda a las siguientes cuestiones, teniendo en cuenta la lista de los 10 posi
 
 a) El software del ejercicio anterior ha evolucionado añadiendo nueva funcionalidad en su implementación. ¿Existe algún tipo de problema en esta versión de la implementación de los que se incluyen en la lista? ¿Es necesario aplicar refactoring en este caso? En el caso de que existan problemas, indique cuáles son y qué tipos de problemas piensa que generarían en el futuro si no se aplica el refactoring ahora.
 
+Nos encontramos con los mismos problemas que antes, además de una gran cantidad de líneas duplicadas.
+
 b) En el caso de que la implementación necesite la aplicación de refactoring, realice los cambios oportunos e indique las mejoras que aporta su implementación respecto a la original.
+
+`GroupOfUsers.java`
+
+```java
+public class GroupOfUsers {
+    
+    private List<Map<String, Integer>> usersWithPoints_Groups = new ArrayList<Map<String, Integer>>() {{
+        add(new HashMap<String, Integer>() {{
+            put("User1", 800);
+            put("User2", 550);
+            put("User3", 20);
+            put("User4", 300);
+        }});
+        add(new HashMap<String, Integer>() {{
+            put("User1", 10);
+            put("User2", 990);
+            put("User3", 760);
+            put("User4", 230);
+        }});
+        add(new HashMap<String, Integer>() {{
+            put("User1", 1000);
+            put("User2", 200);
+            put("User3", 5);
+            put("User4", 780);
+        }});
+    }};
+    
+    public List<ArrayList<String>> getUsers() {
+        List<ArrayList<String>> users = new ArrayList<ArrayList<String>>();
+        
+        for (Map<String, Integer> usersWithPoints : usersWithPoints_Groups) {
+            List<String> usersList = new ArrayList<String>();
+            
+            //Sorting users by points
+            usersWithPoints.entrySet()
+            .stream()
+            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+            .forEachOrdered(x -> usersList.add(x.getKey()));
+            
+            //Capitalizing the names of the users
+            List<String> usersCapitalized = new ArrayList<String>();
+            usersList.forEach(x -> usersCapitalized.add(x.toUpperCase()));
+            
+            //Adding users to the main list
+            users.add((ArrayList<String>)usersCapitalized);
+        }
+        
+        return users;
+    }
+
+}
+
+```
+
+La nueva implementación utiliza una lista de mapas para almacenar cada grupo de usuarios con puntos, lo que permite agregar nuevos grupos sin tener que modificar el código existente. En el método getUsers(), se itera sobre la lista de mapas para procesar cada grupo y agregar los usuarios al resultado final. Esta implementación es más flexible y escalable que la original, ya que permite agregar nuevos grupos de usuarios sin modificar el código existente
 
 ## Referencias
 
