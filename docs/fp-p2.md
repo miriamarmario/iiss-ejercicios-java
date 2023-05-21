@@ -249,6 +249,60 @@ Complete las secciones TO-DO de las clases `AsynchronousAPI` y `Main`, teniendo 
 - En la función `main` se debe mostrar en consola el resultado de la suma completa con el mensaje `The result is (result)`.
 
 
+En la clase `AsynchronousAPI`, se ha completado el bloque `submit` del método `additionAsync` para sumar los elementos de la lista, mostrar cada elemento con un mensaje y añadir un retardo de 5 segundos antes de cada suma. La suma total se completa en el `CompletableFuture` y se devuelve.
+
+`AsynchronousAPI.java`
+```java
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class AsynchronousAPI {
+	
+	public static Future<Integer> additionAsync(List<Integer> elements) throws InterruptedException {
+	    CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+	 
+	    Executors.newCachedThreadPool().submit(() -> {
+	        int sum = 0;
+	        for (int element : elements) {
+	            System.out.println("Adding " + element);
+	            try {
+	                Thread.sleep(5000); // Delay of 5 seconds
+	            } catch (InterruptedException e) {
+	                e.printStackTrace();
+	            }
+	            sum += element;
+	        }
+	        completableFuture.complete(sum);
+	    });
+	 
+	    return completableFuture;
+	}
+}
+```
+En la clase `Main`, se llama al método `additionAsync` de la clase `AsynchronousAPI` pasando la lista de elementos. Luego, se obtiene el resultado de la suma llamando al método `get()` en el `Future` devuelto por `additionAsync`. Finalmente, se muestra el resultado en la consola.
+
+`Main.java`
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+public class Main {
+	
+	public static void main(String args[]) throws InterruptedException, ExecutionException {
+		List<Integer> elements = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		Future<Integer> completableFuture = AsynchronousAPI.additionAsync(elements);
+		Integer result = completableFuture.get();
+		System.out.println("The result is " + result);
+	}
+}
+
+```
+
+
 ### Ejercicio 2
 
 Dado los siguientes fragmentos de código responder a las siguientes preguntas:
@@ -306,6 +360,96 @@ public class Main {
 - En la función `main` se debe mostrar en consola el resultado de la suma completa con el mensaje `The result is (result)`. Este mensaje debe ser mostrado de forma directa cuando se complete el resultado de la variable `completableFuture`.
 
 2. Modifique el código de la clase `Main` para que el procesamiento se realice en paralelo y se obtenga el mismo resultado por consola que en el apartado anterior.
+
+#### `AsynchronousAPI.java`
+
+```java
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class AsynchronousAPI {
+	
+	public static CompletableFuture<Integer> additionAsync(List<Integer> elements) throws InterruptedException {
+		CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+	 
+	    Executors.newCachedThreadPool().submit(() -> {
+	        int sum = 0;
+	        for (int element : elements) {
+	            System.out.println("Adding " + element);
+	            try {
+	                TimeUnit.SECONDS.sleep(2); // espera dos seg
+	            } catch (InterruptedException e) {
+	                e.printStackTrace();
+	            }
+	            sum += element;
+	        }
+	        completableFuture.complete(sum);
+	    });
+	 
+	    return completableFuture;
+	}
+	
+	public static CompletableFuture<Integer> multiplicationAsync(List<Integer> elements) throws InterruptedException {
+		CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+	 
+	    Executors.newCachedThreadPool().submit(() -> {
+	        int product = 1;
+	        for (int element : elements) {
+	            System.out.println("Multiplying " + element);
+	            try {
+	                TimeUnit.SECONDS.sleep(3); //espera 3 seg
+	            } catch (InterruptedException e) {
+	                e.printStackTrace();
+	            }
+	            product *= element;
+	        }
+	        completableFuture.complete(product);
+	    });
+	 
+	    return completableFuture;
+	}
+}
+```
+
+#### `Main.java`
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+public class Main {
+	
+	public static void main(String args[]) throws InterruptedException, ExecutionException {
+		List<Integer> elements = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		List<Integer> elements2 = Arrays.asList(11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+		
+		CompletableFuture<Integer> additionFuture = AsynchronousAPI.additionAsync(elements);
+		CompletableFuture<Integer> multiplicationFuture = AsynchronousAPI.multiplicationAsync(elements2);
+		
+		CompletableFuture<Void> completableFuture = CompletableFuture.allOf(additionFuture, multiplicationFuture);
+		
+		completableFuture.thenRun(() -> {
+			try {
+				Integer additionResult = additionFuture.get();
+				Integer multiplicationResult = multiplicationFuture.get();
+				System.out.println("The result is " + additionResult);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}).get();
+	}
+}
+```
+
+En la clase `AsynchronousAPI`, se han completado los métodos `additionAsync` y `multiplicationAsync` para realizar la suma y la multiplicación de los elementos respectivamente. Se ha añadido un retardo de 2 segundos en la suma de cada elemento y un retardo de 3 segundos en la multiplicación de cada elemento. Además, se muestran los elementos que se están sumando o multiplicando por consola.
+
+En la clase `Main`, se han creado dos `CompletableFuture`, uno para la suma y otro para la multiplicación. Luego, se utiliza `CompletableFuture.allOf()` para combinar ambos `CompletableFuture` en uno solo. La ejecución se realiza en paralelo y se espera a que ambos completen. Después, se obtienen los resultados y se muestra el resultado de la suma en la consola.
+
+El código modificado permite ejecutar los cálculos en paralelo, lo que puede mejorar el rendimiento al aprovechar los recursos disponibles para procesamiento concurrente.
 
 ## Referencias
 

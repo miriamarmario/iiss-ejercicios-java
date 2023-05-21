@@ -354,6 +354,9 @@ public class Main {
 ```
 
 1. Modifique las operaciones de la clase `EmployeeDatabase` utilizando las operaciones de la API para Stream de Java 8.
+
+Se han reemplazado los bucles `for-each` por operaciones de streaming en los métodos existentes para aprovechar las funcionalidades de la API de Streams de Java 8.
+
 2. Extienda la API de la clase `EmployeeDatabase` añadiendo las siguientes operaciones:
 
     - Obtener los empleados cuya edad este comprendida entre un rango dado en la operación como parámetros (`maxAge` y `minAge`).
@@ -361,6 +364,81 @@ public class Main {
     - Obtener los empleados ordenados descendentemente por su edad.
     - Obtener el número de empleados que existen en la base de datos.
     - Obtener el número de empleados que existen en la base de datos y su nombre es igual a uno dado en la operación como parámetro.
+
+
+#### `EmployeeDatabase.java`
+
+```java
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class EmployeeDatabase {
+
+    private static List<Employee> employees = Arrays.asList(
+            new Employee("Employee1", 20),
+            new Employee("Employee2", 30),
+            new Employee("Employee3", 40),
+            new Employee("Employee4", 50));
+
+    public static Employee getEmployeeByName(String name) {
+        return employees.stream()
+                .filter(e -> e.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static Employee getEmployeeByNameAndAge(String name, int age) {
+        return employees.stream()
+                .filter(e -> e.getName().equals(name) && e.getAge() == age)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static List<Employee> getEmployeeByAgeOver(int limitAge) {
+        return employees.stream()
+                .filter(e -> e.getAge() > limitAge)
+                .collect(Collectors.toList());
+    }
+
+    public static List<Employee> getEmployeeByAgeUnder(int limitAge) {
+        return employees.stream()
+                .filter(e -> e.getAge() < limitAge)
+                .collect(Collectors.toList());
+    }
+    
+    public static List<Employee> getEmployeesByAgeRange(int minAge, int maxAge) {
+        return employees.stream()
+                .filter(e -> e.getAge() >= minAge && e.getAge() <= maxAge)
+                .collect(Collectors.toList());
+    }
+    
+    public static List<Employee> getEmployeesSortedByAgeAscending() {
+        return employees.stream()
+                .sorted(Comparator.comparingInt(Employee::getAge))
+                .collect(Collectors.toList());
+    }
+    
+    public static List<Employee> getEmployeesSortedByAgeDescending() {
+        return employees.stream()
+                .sorted(Comparator.comparingInt(Employee::getAge).reversed())
+                .collect(Collectors.toList());
+    }
+    
+    public static int getNumberOfEmployees() {
+        return employees.size();
+    }
+    
+    public static int getNumberOfEmployeesWithName(String name) {
+        return (int) employees.stream()
+                .filter(e -> e.getName().equals(name))
+                .count();
+    }
+}
+```
+
 
 ### Ejercicio 2
 
@@ -375,7 +453,46 @@ Basándose en el código del ejercicio anterior, implemente una API para una tie
     - El precio de tipo double.
 
     b) La clase contendrá las operaciones `set` y `get` necesarias para el acceso a los atributos anteriores.
+    
+`Videogame.java`
+```java
+public class Videogame {
 
+    private String title;
+    private String category;
+    private double price;
+
+    public Videogame(String title, String category, double price) {
+        this.title = title;
+        this.category = category;
+        this.price = price;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+```
 2. Implemente la clase `VideogameDatabase` contemplando los siguientes criterios:
 
     a) La clase contendrá los siguientes atributos:
@@ -393,7 +510,128 @@ Basándose en el código del ejercicio anterior, implemente una API para una tie
     - Obtener la suma de los precios de los videojuegos agrupados por categoría.
     - Obtener la suma de los precios de los videojuegos agrupados por cateogoría, siempre que el precio obtenido de la suma sea superior a 200€.
 
+`VideogameDatabase.java`
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class VideogameDatabase {
+
+    private static List<Videogame> videogames = Arrays.asList(
+            new Videogame("Title1", "Action", 15.99),
+            new Videogame("Title2", "Adventure", 25.99),
+            new Videogame("Title3", "RPG", 19.99),
+            new Videogame("Title4", "Terror", 29.99),
+            new Videogame("Title5", "Terror", 39.99),
+            new Videogame("Title6", "Strategy", 9.99),
+            new Videogame("Title7", "Action", 24.99),
+            new Videogame("Title8", "Racing", 12.99),
+            new Videogame("Title9", "Adventure", 34.99),
+            new Videogame("Title10", "Racing", 16.99)
+    );
+
+    public static List<String> getAllTitles() {
+        return videogames.stream()
+                .map(Videogame::getTitle)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> getTitlesWithPriceGreaterThan(double price) {
+        return videogames.stream()
+                .filter(v -> v.getPrice() > price)
+                .map(Videogame::getTitle)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> getTitlesWithCategory(String category) {
+        return videogames.stream()
+                .filter(v -> v.getCategory().equals(category))
+                .map(Videogame::getTitle)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> getTitlesWithPriceGreaterThanSortedAscending(double price) {
+        return videogames.stream()
+                .filter(v -> v.getPrice() > price)
+                .sorted((v1, v2) -> Double.compare(v1.getPrice(), v2.getPrice()))
+                .map(Videogame::getTitle)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> getTitlesWithPriceGreaterThanSortedDescending(double price) {
+        return videogames.stream()
+                .filter(v -> v.getPrice() > price)
+                .sorted((v1, v2) -> Double.compare(v2.getPrice(), v1.getPrice()))
+                .map(Videogame::getTitle)
+                .collect(Collectors.toList());
+    }
+
+    public static Map<String, Long> getNumberOfVideogamesPerCategory() {
+        return videogames.stream()
+                .collect(Collectors.groupingBy(Videogame::getCategory, Collectors.counting()));
+    }
+
+    public Map<String, Double> getTotalPriceByCategory() {
+        return videogames.stream().collect(Collectors.groupingBy(Videogame::getCategory, Collectors.summingDouble(Videogame::getPrice)));
+    }
+
+    public Map<String, Double> getTotalPriceByCategoryOver200() {
+        return videogames.stream().collect(Collectors.groupingBy(Videogame::getCategory,Collectors.summingDouble(Videogame::getPrice))).entrySet().stream().filter(e -> e.getValue() > 200).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+}
+
+```
+
 3. Implemente además un programa de prueba `Main` que ilustre el uso de las operaciones anteriores.
+
+`Main.java`
+
+```java
+import java.util.List;
+import java.util.Map;
+
+public class Main {
+
+    public static void main(String[] args) {
+        VideogameDatabase database = new VideogameDatabase();
+
+        // Listar todos los títulos de los videojuegos
+        List<String> allTitles = database.getAllTitles();
+        System.out.println("All Titles: " + allTitles);
+
+        // Listar todos los títulos de los videojuegos cuyo precio sea superior a 20€
+        List<String> titlesWithPriceOver20 = database.getTitlesWithPriceOver(20.0);
+        System.out.println("Titles with price over 20€: " + titlesWithPriceOver20);
+
+        // Listar todos los títulos de los videojuegos cuya categoría sea terror
+        List<String> terrorTitles = database.getTitlesByCategory("Terror");
+        System.out.println("Terror Titles: " + terrorTitles);
+
+        // Listar todos los títulos de los videojuegos cuyo precio sea superior a 20€ ordenados ascendentemente por el precio
+        List<String> titlesOver20SortedAscending = database.getTitlesByPriceOverSortedAscending(20.0);
+        System.out.println("Titles with price over 20€ sorted ascending: " + titlesOver20SortedAscending);
+
+        // Listar todos los títulos de los videojuegos cuyo precio sea superior a 20€ ordenados descendentemente por el precio
+        List<String> titlesOver20SortedDescending = database.getTitlesByPriceOverSortedDescending(20.0);
+        System.out.println("Titles with price over 20€ sorted descending: " + titlesOver20SortedDescending);
+
+        // Obtener el número de videojuegos agrupados por categoría
+        Map<String, Long> numberOfVideogamesByCategory = database.getNumberOfVideogamesByCategory();
+        System.out.println("Number of videogames by category: " + numberOfVideogamesByCategory);
+
+        // Obtener la suma de los precios de los videojuegos agrupados por categoría
+        Map<String, Double> totalPriceOfVideogamesByCategory = database.getTotalPriceOfVideogamesByCategory();
+        System.out.println("Total price of videogames by category: " + totalPriceOfVideogamesByCategory);
+
+        // Obtener la suma de los precios de los videojuegos agrupados por categoría, siempre que el precio obtenido de la suma sea superior a 200€
+        Map<String, Double> totalPriceOfVideogamesByCategoryWithPriceOver200 = database.getTotalPriceOfVideogamesByCategoryWithPriceOver(200.0);
+        System.out.println("Total price of videogames by category with price over 200€: " + totalPriceOfVideogamesByCategoryWithPriceOver200);
+    }
+}
+
+```
 
 ## Referencias
 

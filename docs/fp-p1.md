@@ -240,6 +240,19 @@ public class Main {
 
 2. Añada un tercer cambio haciendo uso de cierres (*closures*) para realizar la ordenación aleatoria de los elementos, siguiendo el mismo enfoque aplicado con las clases `DataSorterAsc` y `DataSorterDesc` en el apartado anterior.
 
+En este caso, la ordenación aleatoria se realiza utilizando la expresión lambda Arrays.asList(data) que convierte el array en una lista, y Collections.shuffle() que mezcla el orden de los elementos en la lista. Luego, se devuelve el array resultante.
+
+```java
+import java.util.Collections;
+
+public class DataSorterRandom implements DataSorter {
+    public String[] sort(String[] data) {
+        Collections.shuffle(Arrays.asList(data));
+        return data;
+    }
+}
+```
+
 ## Referencias
 
 [Java 8 Stream Tutorial]: https://winterbe.com/posts/2014/07/31/java8-stream-tutorial-examples/
