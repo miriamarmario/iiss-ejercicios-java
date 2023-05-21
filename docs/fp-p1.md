@@ -63,11 +63,77 @@ public class Main {
 
 1. Utilice expresiones *lambda* y el API de *streams* de Java para cambiar la implementación de las operaciones de la interfaz `DataOperations` usando los mecanismos de la programación funcional.
 
+```java
+public class DataOperationsImpl implements DataOperations {
+    @Override
+    public void print(int[] data) {
+        Arrays.stream(data).forEach(element -> System.out.print(element + ", "));
+        System.out.println();
+    }
+
+    @Override
+    public int[] filterPairs(int[] data) {
+        return Arrays.stream(data)
+                     .filter(element -> (element % 2) != 0)
+                     .toArray();
+    }
+}
+```
+La operación print ahora utiliza el método forEach del API de streams para imprimir cada elemento de la matriz. La operación filterPairs utiliza el método filter del API de streams para eliminar los elementos pares y devuelve un int[] que contiene solo los elementos impares.
+
+
 2. Además, haciendo uso de expresiones *labmda* y del API de *streams*, añada a la interfaz de `DataOperations` las siguientes operaciones y su implementación:
 
 - Operación que devuelva la lista de números ordenada descendentemente.
 - Operación que multiplique todos los números de la lista por 10 e imprima el resultado.
 - Operación que devuelva el resultado de la suma de todos los números de la lista.
+
+```java
+public interface DataOperations {
+    public void print(int[] data);
+    public int[] filterPairs(int[] data);
+    public int[] sortDescending(int[] data);
+    public void multiplyByTen(int[] data);
+    public int sum(int[] data);
+}
+
+public class DataOperationsImpl implements DataOperations {
+    @Override
+    public void print(int[] data) {
+        Arrays.stream(data).forEach(element -> System.out.print(element + ", "));
+        System.out.println();
+    }
+
+    @Override
+    public int[] filterPairs(int[] data) {
+        return Arrays.stream(data)
+                     .filter(element -> (element % 2) != 0)
+                     .toArray();
+    }
+
+    @Override
+    public int[] sortDescending(int[] data) {
+        return Arrays.stream(data)
+                     .boxed()
+                     .sorted(Comparator.reverseOrder())
+                     .mapToInt(Integer::intValue)
+                     .toArray();
+    }
+
+    @Override
+    public void multiplyByTen(int[] data) {
+        Arrays.stream(data)
+              .map(element -> element * 10)
+              .forEach(System.out::println);
+    }
+
+    @Override
+    public int sum(int[] data) {
+        return Arrays.stream(data).sum();
+    }
+}
+```
+La operación sortDescending utiliza los métodos boxed, sorted y mapToInt del API de streams para convertir los elementos a un objeto Integer, ordenarlos en orden descendente y luego convertirlos de nuevo a un arreglo int. La operación multiplyByTen utiliza el método map para multiplicar cada elemento por 10 y luego utiliza forEach para imprimir cada elemento multiplicado. La operación sum simplemente devuelve la suma de todos los elementos de la matriz.
 
 ### Ejercicio 2
 
@@ -132,6 +198,45 @@ public class Main {
 #### Preguntas propuestas
 
 1. Utilice cierres (*closures*) para cambiar la implementación de las clases `DataSorterAsc` y `DataSorterDesc` usando los mecanismos de la programación funcional.
+
+Para cambiar la implementación de las clases DataSorterAsc y DataSorterDesc usando los mecanismos de la programación funcional, se puede utilizar cierres (closures) en lugar de clases concretas que implementen la interfaz DataSorter.
+
+#### `DataSorter.java`
+
+```java
+public interface DataSorter {
+    public String[] sort(String[] data);
+}
+```
+#### `Main.java`
+
+```java
+import java.util.Arrays;
+
+public class Main {
+    public static void main(String args[]) {
+        String [] data = {"H", "S", "I", "V", "E", "W", "M", "P", "L",  "C", "N", "K",
+                 "O", "A", "Q", "R", "J", "D", "G", "T", "U", "X", "B", "Y", "Z", "F"};
+        System.out.println("data = " + Arrays.toString(data));
+
+        DataSorter dataSorter = (array) -> {
+            Arrays.sort(array);
+            return array;
+        };
+
+        dataSorter.sort(data);
+        System.out.println("data (asc) = " + Arrays.toString(data));
+
+        dataSorter = (array) -> {
+            Arrays.sort(array, Collections.reverseOrder());
+            return array;
+        };
+
+        dataSorter.sort(data);
+        System.out.println("data (desc) = " + Arrays.toString(data));
+    }
+}
+```
 
 2. Añada un tercer cambio haciendo uso de cierres (*closures*) para realizar la ordenación aleatoria de los elementos, siguiendo el mismo enfoque aplicado con las clases `DataSorterAsc` y `DataSorterDesc` en el apartado anterior.
 

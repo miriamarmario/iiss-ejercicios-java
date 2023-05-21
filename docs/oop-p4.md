@@ -236,14 +236,215 @@ a) En la clase `Product.java`:
 
 Además, añadir un mensaje de error descriptivo en cada una de las aserciones que se hayan implementado.
 
+```java
+public class Product {
+
+	private int code;
+	private String name;
+	private String category;
+	private double weight;
+	private double height;
+
+	public Product(int code, String name, String category, double weight, double height) {
+
+		assert code >= 0 : "El valor del atributo `code` no puede ser un numero negativo";
+		assert name != null && !name.isEmpty() : "El valor del atributo `name` no puede estar vacio";
+		assert category != null && !category.isEmpty() : "El valor del atributo `category` no puede estar vacio";
+		assert weight >= 0 : "El valor del atributo `weight` no puede ser un numero negativo";
+		assert height >= 0 : "El valor del atributo `height` no puede ser un numero negativo";
+
+		this.code = code;
+
+		if(name == null) {
+			this.name = "";
+		} else {
+			this.name = name;
+		}
+
+		if(category == null) {
+			this.category = "";
+		} else {
+			this.category = category;
+		}
+
+		this.weight = weight;
+		this.height = height;
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	public void setName(String name) {
+		assert name != null && !name.isEmpty() : "El valor del atributo `name` no puede estar vacio";
+		this.name = name;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setCategory(String category) {
+		assert category != null && !category.isEmpty() : "El valor del atributo `category` no puede estar vacio";
+		this.category = category;
+	}
+
+	public String getCategory() {
+		return this.category;
+	}
+
+	public void setWeight(double weight) {
+		assert weight >= 0 : "El valor del atributo `weight` no puede ser un numero negativo";
+		this.weight = weight;
+	}
+
+	public double getWeight() {
+		return this.weight;
+	}
+
+	public void setHeight(double height) {
+		assert height >= 0 : "El valor del atributo `height` no puede ser un numero negativo";
+		this.height = height;
+	}
+
+	public double getHeight() {
+		return this.height;
+	}
+}
+```
+
 b) En la clase `ShoppingCart.java`:
 
 - No se puede añadir un producto con un número de unidades negativo o nulo.
 - No se puede eliminar un producto que no existe en el carrito.
 
+```java
+import java.util.HashMap;
+import java.util.Map;
+public class ShoppingCart {
+
+	Map<Product, Integer> shoppingCart;
+
+	public ShoppingCart() {
+		shoppingCart = new HashMap<Product, Integer>();
+	}
+
+	public void addProduct(Product product, int number) {
+
+		assert number > 0 : "No se puede anadir un producto con un numero de unidades negativo o nulo";
+
+		if(shoppingCart.keySet().stream().filter(element -> element.getCode() == product.getCode()).count() == 0) {
+			shoppingCart.put(product, number);
+		}
+	}
+
+	public Product removeProduct(Product product) {
+		if(shoppingCart.containsKey(product)) {
+			shoppingCart.remove(product);
+			return product;
+		}  else {
+			assert false : "No se puede eliminar un producto que no existe en el carrito";
+			return null;
+		}
+	}
+
+	public void printShoppingCartContent() {
+		System.out.println("El contenido es: ");
+
+		for(Product product: shoppingCart.keySet()) {
+			System.out.println(product.getCode() + " - " + product.getName() + " : " + shoppingCart.get(product));
+		}
+
+	}
+}
+```
+
 ### Ejercicio 2
 
 Dado el código del primer ejercicio, ¿existe algún uso indebido del valor `null`?. En caso afirmativo, reemplazar su uso por el de la clase `Optional` en los casos en los que sea necesario.
+
+Sí se produce un uso incorrecto del valor `null` a la hora de inicializar los atributos `name` y `category`. En la clase `ShoppingCart.java` no se dan estos errores. A continuación se muestra el código mejorado:
+
+```java
+import java.util.Optional;
+
+public class Product {
+
+	private int code;
+	private String name;
+	private String category;
+	private double weight;
+	private double height;
+
+	public Product(int code, String name, String category, double weight, double height) {
+
+		this.code = code;
+
+		Optional<String> optionalName = Optional.ofNullable(name);
+		this.name = optionalName.orElse("");
+
+		Optional<String> optionalCategory = Optional.ofNullable(category);
+		this.category = optionalCategory.orElse("");
+
+		if (this.code < 0) {
+			throw new IllegalArgumentException("El valor del atributo `code` no puede ser un numero negativo");
+		}
+		if (this.weight < 0) {
+			throw new IllegalArgumentException("El valor del atributo `weight` no puede ser un numero negativo");
+		}
+		if (this.height < 0) {
+			throw new IllegalArgumentException("El valor del atributo `height` no puede ser un numero negativo");
+		}
+
+		this.weight = weight;
+		this.height = height;
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	public void setName(String name) {
+		Optional<String> optionalName = Optional.ofNullable(name);
+		this.name = optionalName.orElse("");
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setCategory(String category) {
+		Optional<String> optionalCategory = Optional.ofNullable(category);
+		this.category = optionalCategory.orElse("");
+	}
+
+	public String getCategory() {
+		return this.category;
+	}
+
+	public void setWeight(double weight) {
+		if (weight < 0) {
+			throw new IllegalArgumentException("El valor del atributo `weight` no puede ser un numero negativo");
+		}
+		this.weight = weight;
+	}
+
+	public double getWeight() {
+		return this.weight;
+	}
+
+	public void setHeight(double height) {
+		if (height < 0) {
+			throw new IllegalArgumentException("El valor del atributo `height` no puede ser un numero negativo");
+		}
+		this.height = height;
+	}
+
+	public double getHeight() {
+		return this.height;
+	}
+}
+```
 
 ## Referencias
 

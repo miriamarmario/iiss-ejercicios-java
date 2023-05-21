@@ -95,11 +95,24 @@ public class Main {
 #### Preguntas propuestas
 
 1. ¿Se realiza inyección de dependencias entre las clases anteriores? Si es así, identifique la clase inyectora, el servicio y el cliente.
-2. En el caso de que exista inyección de dependencias, además indique:
 
+Sí, se realiza inyección de dependencias entre las clases. La clase inyectora es Main, el servicio es DBAccess, y el cliente es DBClient.
+
+2. En el caso de que exista inyección de dependencias, además indique:
 - El método de inyección que se realiza (constructor, propiedad o método).
+
+En este caso, se realiza inyección de dependencias mediante el constructor. La inyección de dependencias se realiza en las siguientes líneas:
+
 - La/s línea/s donde se realiza la inyección de dependencias.
 
+```java
+DBAccess dbAccessB = new DBAccessB();
+DBClient client = new DBClient(dbAccessB);
+```
+```java
+DBAccess dbAccessA = new DBAccessA();
+client.setDBAccess(dbAccessA);
+```
 
 ### Ejercicio 2
 
@@ -226,9 +239,46 @@ Los pasos a completar son:
 
 a) Mostrar el mensaje "The login is required" antes de la ejecución de las operaciones `makeTransaction` y `takeMoneyOut`.
 
+Para mostrar el mensaje antes de la ejecución de las operaciones makeTransaction y takeMoneyOut, se debe completar la anotación @Before de la siguiente manera:
+
+```java
+@Before("execution(* Bank.makeTransaction()) || execution(* Bank.takeMoneyOut())")
+public void before(JoinPoint joinPoint){
+    System.out.println("The login is required");
+}
+```
+La expresión "execution(* Bank.makeTransaction()) || execution(* Bank.takeMoneyOut())" indica que se interceptarán las llamadas a los métodos makeTransaction() y takeMoneyOut() de la clase Bank.
+
+
 b) Mostrar el mensaje "The database is empty" después de la ejecución de la operación `showUsers`.
 
+Para mostrar el mensaje después de la ejecución de la operación showUsers, se debe completar la anotación @After de la siguiente manera:
+
+```java
+@After("execution(* Bank.showUsers())")
+public void after(JoinPoint joinPoint){
+    System.out.println("The database is empty");
+}
+```
+La expresión "execution(* Bank.showUsers())" indica que se interceptará la llamada al método showUsers() de la clase Bank.
+
 3. Finalmente, sustituir el fichero `LoginAspect.java` por el fichero `LoginAspect.aj` incluyendo la misma funcionalidad pero utilizando la sintaxis de AspectJ.
+
+Creamos el fichero LoginAspect.aj con el siguiente contenido:
+```java
+@Aspect
+public class LoginAspect {
+    @Before("execution(* Bank.makeTransaction()) || execution(* Bank.takeMoneyOut())")
+    public void before(JoinPoint joinPoint){
+        System.out.println("The login is required");
+    }
+    
+    @After("execution(* Bank.showUsers())")
+    public void after(JoinPoint joinPoint){
+        System.out.println("The database is empty");
+    }
+}
+```
 
 
 ## Referencias
